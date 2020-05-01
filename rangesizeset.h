@@ -256,6 +256,11 @@ public:
     return;
   }
 
+  void clear() {
+    Map.clear();
+    Sizes.clear();
+  }
+
   size_t size() const {
     return Map.size();
   }
