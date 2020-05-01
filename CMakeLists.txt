@@ -10,6 +10,9 @@ add_executable(test_rangeset
  "test_insert.cpp"
  "test_iterate.cpp"
  "test_erase.cpp"
+ "test_insert_size.cpp"
+ "test_iterate_size.cpp"
+ "test_erase_size.cpp"
 )
 
 target_link_libraries(
