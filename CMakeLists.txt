@@ -10,12 +10,20 @@ add_executable(test_rangeset
  "test_insert.cpp"
  "test_iterate.cpp"
  "test_erase.cpp"
+ "test_contains.cpp"
  "test_insert_size.cpp"
  "test_iterate_size.cpp"
  "test_erase_size.cpp"
+ "test_contains_size.cpp"
+ "test_types_size.cpp"
 )
 
 target_link_libraries(
  test_rangeset
  PUBLIC GTest::GTest GTest::Main
+)
+
+target_compile_features(
+ test_rangeset
+ PRIVATE cxx_std_17
 )

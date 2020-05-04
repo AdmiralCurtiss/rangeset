@@ -1,57 +1,62 @@
+#pragma once
+
 #include <cassert>
 #include <map>
 
 namespace HyoutaUtilities {
 template <typename T> class RangeSet {
+private:
+  using MapT = std::map<T, T>;
+
 public:
   struct const_iterator {
   public:
     const T& from() const {
-      return it->first;
+      return It->first;
     }
 
     const T& to() const {
-      return it->second;
+      return It->second;
     }
 
     const_iterator& operator++() {
-      ++it;
+      ++It;
       return *this;
     }
 
     const_iterator operator++(int) {
       const_iterator old = *this;
-      ++it;
+      ++It;
       return old;
     }
 
     const_iterator& operator--() {
-      --it;
+      --It;
       return *this;
     }
 
     const_iterator operator--(int) {
       const_iterator old = *this;
-      --it;
+      --It;
       return old;
     }
 
     bool operator==(const const_iterator& rhs) const {
-      return this->it == rhs.it;
+      return this->It == rhs.It;
     }
 
     bool operator!=(const const_iterator& rhs) const {
-      return this->it != rhs.it;
+      return !operator==(rhs);
     }
 
   private:
-    typename std::map<T, T>::const_iterator it;
-    const_iterator(typename std::map<T, T>::const_iterator it) : it(it) {}
+    typename MapT::const_iterator It;
+    const_iterator(typename MapT::const_iterator it) : It(it) {}
     friend class RangeSet;
   };
 
   void insert(T from, T to) {
-    if (!(from < to))
+    if (from >= to)
       return;
 
     // find the closest range
@@ -120,7 +125,7 @@ public:
   }
 
   void erase(T from, T to) {
-    if (!(from < to))
+    if (from >= to)
       return;
 
     // like insert, we use upper_bound to find the closest range
@@ -199,8 +204,20 @@ public:
     Map.clear();
   }
 
+  bool contains(T value) const {
+    auto it = Map.upper_bound(value);
+    if (it == Map.begin())
+      return false;
+    --it;
+    return get_from(it) <= value && value < get_to(it);
+  }
+
   size_t size() const {
     return Map.size();
+  }
+
+  bool empty() const {
+    return Map.empty();
   }
 
   const_iterator begin() const {
@@ -209,6 +226,14 @@ public:
 
   const_iterator end() const {
     return const_iterator(Map.end());
+  }
+
+  const_iterator cbegin() const {
+    return const_iterator(Map.cbegin());
+  }
+
+  const_iterator cend() const {
+    return const_iterator(Map.cend());
   }
 
   bool operator==(const RangeSet<T>& other) const {
@@ -227,25 +252,33 @@ private:
   // - 'from' is always smaller than 'to'
   // - Stored ranges never touch.
   // - Stored ranges never overlap.
-  std::map<T, T> Map;
+  MapT Map;
 
-  T get_from(typename std::map<T, T>::iterator it) {
+  T get_from(typename MapT::iterator it) const {
     return it->first;
   }
 
-  T get_to(typename std::map<T, T>::iterator it) {
+  T get_to(typename MapT::iterator it) const {
     return it->second;
   }
 
-  typename std::map<T, T>::iterator insert_range(T from, T to) {
+  T get_from(typename MapT::const_iterator it) const {
+    return it->first;
+  }
+
+  T get_to(typename MapT::const_iterator it) const {
+    return it->second;
+  }
+
+  typename MapT::iterator insert_range(T from, T to) {
     return Map.emplace(from, to).first;
   }
 
-  typename std::map<T, T>::iterator erase_range(typename std::map<T, T>::iterator it) {
+  typename MapT::iterator erase_range(typename MapT::iterator it) {
     return Map.erase(it);
   }
 
-  void bisect_range(typename std::map<T, T>::iterator it, T from, T to) {
+  void bisect_range(typename MapT::iterator it, T from, T to) {
     assert(get_from(it) < from);
     assert(get_from(it) < to);
     assert(get_to(it) > from);
@@ -256,31 +289,31 @@ private:
     insert_range(to, itto);
   }
 
-  typename std::map<T, T>::iterator reduce_from(typename std::map<T, T>::iterator it, T from) {
+  typename MapT::iterator reduce_from(typename MapT::iterator it, T from) {
     assert(get_from(it) < from);
     T itto = get_to(it);
     erase_range(it);
     return insert_range(from, itto);
   }
 
-  void maybe_expand_to(typename std::map<T, T>::iterator it, T to) {
-    if (to > get_to(it)) {
-      expand_to(it, to);
-    }
+  void maybe_expand_to(typename MapT::iterator it, T to) {
+    if (to <= get_to(it))
+      return;
+
+    expand_to(it, to);
   }
 
-  void expand_to(typename std::map<T, T>::iterator it, T to) {
+  void expand_to(typename MapT::iterator it, T to) {
     assert(get_to(it) < to);
     it->second = to;
   }
 
-  void reduce_to(typename std::map<T, T>::iterator it, T to) {
+  void reduce_to(typename MapT::iterator it, T to) {
     assert(get_to(it) > to);
     it->second = to;
   }
 
-  void merge_from_iterator_to_value(typename std::map<T, T>::iterator inserted, typename std::map<T, T>::iterator bound,
-                                    T to) {
+  void merge_from_iterator_to_value(typename MapT::iterator inserted, typename MapT::iterator bound, T to) {
     // erase all ranges that overlap the inserted while updating the upper end
     while (bound != Map.end() && get_from(bound) <= to) {
       maybe_expand_to(inserted, get_to(bound));
@@ -288,7 +321,7 @@ private:
     }
   }
 
-  void erase_from_iterator_to_value(typename std::map<T, T>::iterator bound, T to) {
+  void erase_from_iterator_to_value(typename MapT::iterator bound, T to) {
     // assumption: given bound starts at or after the 'from' value of the range to erase
     while (true) {
       // given range starts before stored range

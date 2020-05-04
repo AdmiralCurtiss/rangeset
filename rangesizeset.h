@@ -1,106 +1,137 @@
+#pragma once
+
 #include <cassert>
 #include <map>
+#include <type_traits>
 
 namespace HyoutaUtilities {
 // Like RangeSet, but additionally stores a map of the ranges sorted by their size, for quickly finding the largest or
 // smallest range.
 template <typename T> class RangeSizeSet {
-public:
-  // TODO: this should be an unsigned type when T is signed
-  using UT = T;
+private:
+  // Key type used in the by-size multimap. Should be a type big enough to hold all possible distances between
+  // possible 'from' and 'to'.
+  // I'd actually love to just do
+  // using SizeT = typename std::conditional<std::is_pointer_v<T>,
+  //     std::size_t, typename std::make_unsigned<T>::type>::type;
+  // but that's apparently not possible due to the std::make_unsigned<T>::type not existing for pointer types
+  // so we'll work around this...
+  template <typename U, bool IsPointer> struct GetSizeType { using S = typename std::make_unsigned<U>::type; };
+  template <typename U> struct GetSizeType<U, true> { using S = std::size_t; };
+  using SizeT = typename GetSizeType<T, std::is_pointer_v<T>>::S;
 
-  struct Value;
+  // Value type stored in the regular range map.
+  struct Value {
+    // End point of the range.
+    T To;
+
+    // Pointer to the same range in the by-size multimap.
+    typename std::multimap<SizeT, typename std::map<T, Value>::iterator, std::greater<SizeT>>::iterator SizeIt;
+
+    Value(T to) : To(to) {}
+
+    bool operator==(const Value& other) const {
+      return this->To == other.To;
+    }
+
+    bool operator!=(const Value& other) const {
+      return !operator==(other);
+    }
+  };
+
+  using MapT = std::map<T, Value>;
+  using SizeMapT = std::multimap<SizeT, typename MapT::iterator, std::greater<SizeT>>;
+
+public:
   struct const_iterator {
   public:
     const T& from() const {
-      return it->first;
+      return It->first;
     }
 
     const T& to() const {
-      return it->second.To;
+      return It->second.To;
     }
 
     const_iterator& operator++() {
-      ++it;
+      ++It;
       return *this;
     }
 
     const_iterator operator++(int) {
       const_iterator old = *this;
-      ++it;
+      ++It;
       return old;
     }
 
     const_iterator& operator--() {
-      --it;
+      --It;
       return *this;
     }
 
     const_iterator operator--(int) {
       const_iterator old = *this;
-      --it;
+      --It;
       return old;
     }
 
     bool operator==(const const_iterator& rhs) const {
-      return this->it == rhs.it;
+      return this->It == rhs.It;
     }
 
     bool operator!=(const const_iterator& rhs) const {
-      return this->it != rhs.it;
+      return !operator==(rhs);
     }
 
   private:
-    typename std::map<T, Value>::const_iterator it;
-    const_iterator(typename std::map<T, Value>::const_iterator it) : it(it) {}
+    typename MapT::const_iterator It;
+    const_iterator(typename MapT::const_iterator it) : It(it) {}
     friend class RangeSizeSet;
   };
 
   struct by_size_const_iterator {
   public:
     const T& from() const {
-      return it->second->first;
+      return It->second->first;
     }
 
     const T& to() const {
-      return it->second->second.To;
+      return It->second->second.To;
     }
 
     by_size_const_iterator& operator++() {
-      ++it;
+      ++It;
       return *this;
     }
 
     by_size_const_iterator operator++(int) {
       by_size_const_iterator old = *this;
-      ++it;
+      ++It;
       return old;
     }
 
     by_size_const_iterator& operator--() {
-      --it;
+      --It;
       return *this;
     }
 
     by_size_const_iterator operator--(int) {
       by_size_const_iterator old = *this;
-      --it;
+      --It;
       return old;
     }
 
     bool operator==(const by_size_const_iterator& rhs) const {
-      return this->it == rhs.it;
+      return this->It == rhs.It;
     }
 
     bool operator!=(const by_size_const_iterator& rhs) const {
-      return this->it != rhs.it;
+      return !operator==(rhs);
     }
 
   private:
-    typename std::multimap<UT, typename std::map<T, Value>::iterator, std::greater<UT>>::const_iterator it;
-    by_size_const_iterator(
-        typename std::multimap<UT, typename std::map<T, Value>::iterator, std::greater<UT>>::const_iterator it)
-        : it(it) {}
+    typename SizeMapT::const_iterator It;
+    by_size_const_iterator(typename SizeMapT::const_iterator it) : It(it) {}
     friend class RangeSizeSet;
   };
 
@@ -112,7 +143,7 @@ public:
   RangeSizeSet<T>& operator=(RangeSizeSet<T>&&) = default;
 
   void insert(T from, T to) {
-    if (!(from < to))
+    if (from >= to)
       return;
 
     // find the closest range
@@ -181,7 +212,7 @@ public:
   }
 
   void erase(T from, T to) {
-    if (!(from < to))
+    if (from >= to)
       return;
 
     // like insert, we use upper_bound to find the closest range
@@ -261,8 +292,20 @@ public:
     Sizes.clear();
   }
 
+  bool contains(T value) const {
+    auto it = Map.upper_bound(value);
+    if (it == Map.begin())
+      return false;
+    --it;
+    return get_from(it) <= value && value < get_to(it);
+  }
+
   size_t size() const {
     return Map.size();
+  }
+
+  bool empty() const {
+    return Map.empty();
   }
 
   const_iterator begin() const {
@@ -273,12 +316,28 @@ public:
     return const_iterator(Map.end());
   }
 
+  const_iterator cbegin() const {
+    return const_iterator(Map.cbegin());
+  }
+
+  const_iterator cend() const {
+    return const_iterator(Map.cend());
+  }
+
   by_size_const_iterator by_size_begin() const {
     return by_size_const_iterator(Sizes.begin());
   }
 
   by_size_const_iterator by_size_end() const {
     return by_size_const_iterator(Sizes.end());
+  }
+
+  by_size_const_iterator by_size_cbegin() const {
+    return by_size_const_iterator(Sizes.cbegin());
+  }
+
+  by_size_const_iterator by_size_cend() const {
+    return by_size_const_iterator(Sizes.cend());
   }
 
   bool operator==(const RangeSizeSet<T>& other) const {
@@ -290,29 +349,15 @@ public:
   }
 
 private:
-  UT calc_size(T from, T to) {
-    // TODO: This should behave correctly when T is signed.
-    return UT(to - from);
+  static SizeT calc_size(T from, T to) {
+    if constexpr (std::is_pointer_v<T>) {
+      // for pointers we don't want pointer arithmetic here, else void* breaks
+      static_assert(sizeof(T) <= sizeof(SizeT));
+      return reinterpret_cast<SizeT>(to) - reinterpret_cast<SizeT>(from);
+    } else {
+      return static_cast<SizeT>(to - from);
+    }
   }
-
-  // Value type stored in the regular range map.
-  struct Value {
-    // End point of the range.
-    T To;
-
-    // Pointer to the same range in the by-size multimap.
-    typename std::multimap<UT, typename std::map<T, Value>::iterator, std::greater<UT>>::iterator SizeIt;
-
-    Value(T to) : To(to) {}
-
-    bool operator==(const Value& other) const {
-      return this->To == other.To;
-    }
-
-    bool operator!=(const Value& other) const {
-      return !(*this == other);
-    }
-  };
 
   // Assumptions that can be made about the data:
   // - Range are stored in the form [from, to[
@@ -321,34 +366,42 @@ private:
   // - 'from' is always smaller than 'to'
   // - Stored ranges never touch.
   // - Stored ranges never overlap.
-  std::map<T, Value> Map;
+  MapT Map;
 
   // The by-size multimap.
   // Key is the size of the range.
   // Value is a pointer to the range in the regular range map.
   // We use std::greater so that Sizes.begin() gives us the largest range.
-  std::multimap<UT, typename std::map<T, Value>::iterator, std::greater<UT>> Sizes;
+  SizeMapT Sizes;
 
-  T get_from(typename std::map<T, Value>::iterator it) {
+  T get_from(typename MapT::iterator it) const {
     return it->first;
   }
 
-  T get_to(typename std::map<T, Value>::iterator it) {
+  T get_to(typename MapT::iterator it) const {
     return it->second.To;
   }
 
-  typename std::map<T, Value>::iterator insert_range(T from, T to) {
+  T get_from(typename MapT::const_iterator it) const {
+    return it->first;
+  }
+
+  T get_to(typename MapT::const_iterator it) const {
+    return it->second.To;
+  }
+
+  typename MapT::iterator insert_range(T from, T to) {
     auto m = Map.emplace(from, to).first;
     m->second.SizeIt = Sizes.emplace(calc_size(from, to), m);
     return m;
   }
 
-  typename std::map<T, Value>::iterator erase_range(typename std::map<T, Value>::iterator it) {
+  typename MapT::iterator erase_range(typename MapT::iterator it) {
     Sizes.erase(it->second.SizeIt);
     return Map.erase(it);
   }
 
-  void bisect_range(typename std::map<T, Value>::iterator it, T from, T to) {
+  void bisect_range(typename MapT::iterator it, T from, T to) {
     assert(get_from(it) < from);
     assert(get_from(it) < to);
     assert(get_to(it) > from);
@@ -359,35 +412,35 @@ private:
     insert_range(to, itto);
   }
 
-  typename std::map<T, Value>::iterator reduce_from(typename std::map<T, Value>::iterator it, T from) {
+  typename MapT::iterator reduce_from(typename MapT::iterator it, T from) {
     assert(get_from(it) < from);
     T itto = get_to(it);
     erase_range(it);
     return insert_range(from, itto);
   }
 
-  void maybe_expand_to(typename std::map<T, Value>::iterator it, T to) {
-    if (to > get_to(it)) {
-      expand_to(it, to);
-    }
+  void maybe_expand_to(typename MapT::iterator it, T to) {
+    if (to <= get_to(it))
+      return;
+
+    expand_to(it, to);
   }
 
-  void expand_to(typename std::map<T, Value>::iterator it, T to) {
+  void expand_to(typename MapT::iterator it, T to) {
     assert(get_to(it) < to);
     it->second.To = to;
     Sizes.erase(it->second.SizeIt);
     it->second.SizeIt = Sizes.emplace(calc_size(get_from(it), to), it);
   }
 
-  void reduce_to(typename std::map<T, Value>::iterator it, T to) {
+  void reduce_to(typename MapT::iterator it, T to) {
     assert(get_to(it) > to);
     it->second.To = to;
     Sizes.erase(it->second.SizeIt);
     it->second.SizeIt = Sizes.emplace(calc_size(get_from(it), to), it);
   }
 
-  void merge_from_iterator_to_value(typename std::map<T, Value>::iterator inserted,
-                                    typename std::map<T, Value>::iterator bound, T to) {
+  void merge_from_iterator_to_value(typename MapT::iterator inserted, typename MapT::iterator bound, T to) {
     // erase all ranges that overlap the inserted while updating the upper end
     while (bound != Map.end() && get_from(bound) <= to) {
       maybe_expand_to(inserted, get_to(bound));
@@ -395,7 +448,7 @@ private:
     }
   }
 
-  void erase_from_iterator_to_value(typename std::map<T, Value>::iterator bound, T to) {
+  void erase_from_iterator_to_value(typename MapT::iterator bound, T to) {
     // assumption: given bound starts at or after the 'from' value of the range to erase
     while (true) {
       // given range starts before stored range
