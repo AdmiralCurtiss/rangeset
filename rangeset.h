@@ -200,6 +200,10 @@ public:
     return;
   }
 
+  const_iterator erase(const_iterator it) {
+    return const_iterator(erase_range(it.It));
+  }
+
   void clear() {
     Map.clear();
   }
@@ -275,6 +279,10 @@ private:
   }
 
   typename MapT::iterator erase_range(typename MapT::iterator it) {
+    return Map.erase(it);
+  }
+
+  typename MapT::const_iterator erase_range(typename MapT::const_iterator it) {
     return Map.erase(it);
   }
 

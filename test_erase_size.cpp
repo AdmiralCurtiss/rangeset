@@ -457,3 +457,32 @@ TEST(EraseSizeTest, Tests) {
   check(without(90, 100), {10, 20, 21, 30, 50, 65, 70, 71, 75, 90});
   check(without(95, 100), {10, 20, 21, 30, 50, 65, 70, 71, 75, 90});
 }
+
+TEST(EraseSizeTest, ViaIterator) {
+  HyoutaUtilities::RangeSizeSet<size_t> r;
+  r.insert(1, 5);
+  r.insert(7, 20);
+  r.insert(40, 44);
+
+  auto it = r.begin();
+  ASSERT_TRUE(it != r.end());
+  ++it;
+  ASSERT_TRUE(it != r.end());
+  ASSERT_TRUE(it.from() == 7);
+  ASSERT_TRUE(it.to() == 20);
+  it = r.erase(it);
+  ASSERT_TRUE(it != r.end());
+  ASSERT_TRUE(it.from() == 40);
+  ASSERT_TRUE(it.to() == 44);
+  --it;
+  ASSERT_TRUE(it != r.end());
+  ASSERT_TRUE(it.from() == 1);
+  ASSERT_TRUE(it.to() == 5);
+  it = r.erase(it);
+  ASSERT_TRUE(it != r.end());
+  ASSERT_TRUE(it.from() == 40);
+  ASSERT_TRUE(it.to() == 44);
+  it = r.erase(it);
+  ASSERT_TRUE(it == r.end());
+  ASSERT_TRUE(r.begin() == r.end());
+}
