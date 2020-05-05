@@ -276,6 +276,7 @@ public:
       if (to < get_to(bound)) {
         // need to split in two
         bisect_range(bound, from, to);
+        return;
       } else {
         // just update end
         reduce_to(bound, from);
