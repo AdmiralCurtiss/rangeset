@@ -46,6 +46,8 @@ private:
   using SizeMapT = std::multimap<SizeT, typename MapT::iterator, std::greater<SizeT>>;
 
 public:
+  struct by_size_const_iterator;
+
   struct const_iterator {
   public:
     const T& from() const {
@@ -84,6 +86,10 @@ public:
 
     bool operator!=(const const_iterator& rhs) const {
       return !operator==(rhs);
+    }
+
+    by_size_const_iterator to_size_iterator() {
+      return by_size_const_iterator(It->second.SizeIt);
     }
 
   private:
@@ -130,6 +136,10 @@ public:
 
     bool operator!=(const by_size_const_iterator& rhs) const {
       return !operator==(rhs);
+    }
+
+    const_iterator to_range_iterator() {
+      return const_iterator(It->second);
     }
 
   private:
