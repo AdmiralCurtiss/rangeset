@@ -225,6 +225,10 @@ public:
     return Map.empty();
   }
 
+  void swap(RangeSet<T>& other) {
+    Map.swap(other.Map);
+  }
+
   const_iterator begin() const {
     return const_iterator(Map.begin());
   }

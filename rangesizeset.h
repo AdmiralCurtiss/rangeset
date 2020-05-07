@@ -352,6 +352,11 @@ public:
     return Sizes.upper_bound(key);
   }
 
+  void swap(RangeSizeSet<T>& other) {
+    Map.swap(other.Map);
+    Sizes.swap(other.Sizes);
+  }
+
   const_iterator begin() const {
     return const_iterator(Map.begin());
   }
