@@ -16,6 +16,7 @@ add_executable(test_rangeset
  "test_erase_size.cpp"
  "test_contains_size.cpp"
  "test_types_size.cpp"
+ "test_lookup_size.cpp"
 )
 
 target_link_libraries(

@@ -18,8 +18,11 @@ private:
   // so we'll work around this...
   template <typename U, bool IsPointer> struct GetSizeType { using S = typename std::make_unsigned<U>::type; };
   template <typename U> struct GetSizeType<U, true> { using S = std::size_t; };
+
+public:
   using SizeT = typename GetSizeType<T, std::is_pointer_v<T>>::S;
 
+private:
   // Value type stored in the regular range map.
   struct Value {
     // End point of the range.
@@ -315,6 +318,28 @@ public:
 
   bool empty() const {
     return Map.empty();
+  }
+
+  size_t by_size_count(const SizeT& key) const {
+    return Sizes.count(key);
+  }
+
+  by_size_const_iterator by_size_find(const SizeT& key) const {
+    return Sizes.find(key);
+  }
+
+  std::pair<by_size_const_iterator, by_size_const_iterator> by_size_equal_range(const SizeT& key) const {
+    auto p = Sizes.equal_range(key);
+    return std::pair<by_size_const_iterator, by_size_const_iterator>(by_size_const_iterator(p.first),
+                                                                     by_size_const_iterator(p.second));
+  }
+
+  by_size_const_iterator by_size_lower_bound(const SizeT& key) const {
+    return Sizes.lower_bound(key);
+  }
+
+  by_size_const_iterator by_size_upper_bound(const SizeT& key) const {
+    return Sizes.upper_bound(key);
   }
 
   const_iterator begin() const {
