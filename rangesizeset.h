@@ -292,6 +292,10 @@ public:
     return const_iterator(erase_range(it.It));
   }
 
+  by_size_const_iterator erase(by_size_const_iterator it) {
+    return by_size_const_iterator(erase_range_by_size(it.It));
+  }
+
   void clear() {
     Map.clear();
     Sizes.clear();
@@ -409,6 +413,11 @@ private:
   typename MapT::const_iterator erase_range(typename MapT::const_iterator it) {
     Sizes.erase(it->second.SizeIt);
     return Map.erase(it);
+  }
+
+  typename SizeMapT::const_iterator erase_range_by_size(typename SizeMapT::const_iterator it) {
+    Map.erase(it->second);
+    return Sizes.erase(it);
   }
 
   void bisect_range(typename MapT::iterator it, T from, T to) {

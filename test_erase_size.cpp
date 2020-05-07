@@ -466,6 +466,8 @@ TEST(EraseSizeTest, ViaIterator) {
 
   auto it = r.begin();
   ASSERT_TRUE(it != r.end());
+  ASSERT_TRUE(it.from() == 1);
+  ASSERT_TRUE(it.to() == 5);
   ++it;
   ASSERT_TRUE(it != r.end());
   ASSERT_TRUE(it.from() == 7);
@@ -485,4 +487,35 @@ TEST(EraseSizeTest, ViaIterator) {
   it = r.erase(it);
   ASSERT_TRUE(it == r.end());
   ASSERT_TRUE(r.begin() == r.end());
+}
+
+TEST(EraseSizeTest, ViaSizeIterator) {
+  HyoutaUtilities::RangeSizeSet<size_t> r;
+  r.insert(1, 5);
+  r.insert(7, 20);
+  r.insert(40, 45);
+
+  auto it = r.by_size_begin();
+  ASSERT_TRUE(it != r.by_size_end());
+  ASSERT_TRUE(it.from() == 7);
+  ASSERT_TRUE(it.to() == 20);
+  ++it;
+  ASSERT_TRUE(it != r.by_size_end());
+  ASSERT_TRUE(it.from() == 40);
+  ASSERT_TRUE(it.to() == 45);
+  it = r.erase(it);
+  ASSERT_TRUE(it != r.by_size_end());
+  ASSERT_TRUE(it.from() == 1);
+  ASSERT_TRUE(it.to() == 5);
+  --it;
+  ASSERT_TRUE(it != r.by_size_end());
+  ASSERT_TRUE(it.from() == 7);
+  ASSERT_TRUE(it.to() == 20);
+  it = r.erase(it);
+  ASSERT_TRUE(it != r.by_size_end());
+  ASSERT_TRUE(it.from() == 1);
+  ASSERT_TRUE(it.to() == 5);
+  it = r.erase(it);
+  ASSERT_TRUE(it == r.by_size_end());
+  ASSERT_TRUE(r.by_size_begin() == r.by_size_end());
 }
