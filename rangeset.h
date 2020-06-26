@@ -59,35 +59,35 @@ public:
     if (from >= to)
       return;
 
-    // find the closest range
-    // this will return the closest range whose starting position is greater
-    // than 'from'
+    // Start by finding the closest range.
+    // upper_bound() returns the closest range whose starting position
+    // is greater than 'from'.
     auto bound = Map.upper_bound(from);
     if (bound == Map.end()) {
-      // there is no range that starts greater than the given one
-      // this means we have three options:
-      // - no range exists yet, this is the first range
+      // There is no range that starts greater than the given one.
+      // This means we have three options:
+      // - 1. No range exists yet, this is the first range.
       if (Map.empty()) {
         insert_range(from, to);
         return;
       }
 
-      // - the given range does not overlap the last range
+      // - 2. The given range does not overlap the last range.
       --bound;
       if (from > get_to(bound)) {
         insert_range(from, to);
         return;
       }
 
-      // - the given range does overlap the last range
+      // - 3. The given range does overlap the last range.
       maybe_expand_to(bound, to);
       return;
     }
 
     if (bound == Map.begin()) {
-      // given range starts before any of the existing ones
-      // must insert this as a new range as we can't modify a key in a
-      // std::map...
+      // The given range starts before any of the existing ones.
+      // We must insert this as a new range even if we potentially overlap
+      // an existing one as we can't modify a key in a std::map.
       auto inserted = insert_range(from, to);
       merge_from_iterator_to_value(inserted, bound, to);
       return;
@@ -95,10 +95,10 @@ public:
 
     auto abound = bound--;
 
-    // bound now points at the first range in the map that could possibly be
-    // affected
+    // 'bound' now points at the first range in the map that
+    // could possibly be affected.
 
-    // if bound overlaps with given range, update bounds object
+    // If 'bound' overlaps with given range, update bounds object.
     if (get_to(bound) >= from) {
       maybe_expand_to(bound, to);
       auto inserted = bound;
@@ -107,9 +107,9 @@ public:
       return;
     }
 
-    // bound *doesn't* overlap with given range, check next range
+    // 'bound' *doesn't* overlap with given range, check next range.
 
-    // if this range overlaps with given range
+    // If this range overlaps with given range,
     if (get_from(abound) <= to) {
       // insert new range
       auto inserted = insert_range(from, to >= get_to(abound) ? to : get_to(abound));
@@ -119,8 +119,8 @@ public:
       return;
     }
 
-    // if we come here then this new range overlaps nothing and must be inserted
-    // as a new range
+    // Otherwise, if we come here, then this new range overlaps nothing
+    // and must be inserted as a new range.
     insert_range(from, to);
   }
 
@@ -128,47 +128,47 @@ public:
     if (from >= to)
       return;
 
-    // like insert, we use upper_bound to find the closest range
+    // Like insert(), we use upper_bound to find the closest range.
     auto bound = Map.upper_bound(from);
     if (bound == Map.end()) {
-      // there is no range that starts greater than the given one
+      // There is no range that starts greater than the given one.
       if (Map.empty()) {
         // nothing to do
         return;
       }
       --bound;
-      // bound now points at the last range
+      // 'bound' now points at the last range.
       if (from >= get_to(bound)) {
-        // given range is larger than any that exists, nothing to do
+        // Given range is larger than any range that exists, nothing to do.
         return;
       }
 
       if (to >= get_to(bound)) {
         if (from == get_from(bound)) {
-          // given range fully overlaps last range, erase it
+          // Given range fully overlaps last range, erase it.
           erase_range(bound);
           return;
         } else {
-          // given range overlaps end of last range, reduce it
+          // Given range overlaps end of last range, reduce it.
           reduce_to(bound, from);
           return;
         }
       }
 
       if (from == get_from(bound)) {
-        // given range overlaps begin of last range, reduce it
+        // Given range overlaps begin of last range, reduce it.
         reduce_from(bound, to);
         return;
       } else {
-        // given range overlaps middle of last range, bisect it
+        // Given range overlaps middle of last range, bisect it.
         bisect_range(bound, from, to);
         return;
       }
     }
 
     if (bound == Map.begin()) {
-      // if we found the first range that means 'from' is before any stored range
-      // this means we can just erase from start until 'to' and be done with it
+      // If we found the first range that means 'from' is before any stored range.
+      // This means we can just erase from start until 'to' and be done with it.
       erase_from_iterator_to_value(bound, to);
       return;
     }
@@ -177,14 +177,14 @@ public:
     auto abound = bound--;
 
     if (from == get_from(bound)) {
-      // similarly, if the previous range starts with the given one, just erase until 'to'
+      // Similarly, if the previous range starts with the given one, just erase until 'to'.
       erase_from_iterator_to_value(bound, to);
       return;
     }
 
-    // if we come here, the given range may or may not overlap part of the current 'bound'
+    // If we come here, the given range may or may not overlap part of the current 'bound'
     // (but never the full range), which means we may need to update the end position of it,
-    // or possibly even split it into two
+    // or possibly even split it into two.
     if (from < get_to(bound)) {
       if (to < get_to(bound)) {
         // need to split in two
@@ -196,7 +196,7 @@ public:
       }
     }
 
-    // and then just erase until to
+    // and then just erase until 'to'
     erase_from_iterator_to_value(abound, to);
     return;
   }
@@ -327,7 +327,7 @@ private:
   }
 
   void merge_from_iterator_to_value(typename MapT::iterator inserted, typename MapT::iterator bound, T to) {
-    // erase all ranges that overlap the inserted while updating the upper end
+    // Erase all ranges that overlap the inserted while updating the upper end.
     while (bound != Map.end() && get_from(bound) <= to) {
       maybe_expand_to(inserted, get_to(bound));
       bound = erase_range(bound);
@@ -335,29 +335,31 @@ private:
   }
 
   void erase_from_iterator_to_value(typename MapT::iterator bound, T to) {
-    // assumption: given bound starts at or after the 'from' value of the range to erase
+    // Assumption: Given bound starts at or after the 'from' value of the range to erase.
     while (true) {
-      // given range starts before stored range
+      // Given range starts before stored range.
       if (to <= get_from(bound)) {
-        // range ends before this range too, nothing to do
+        // Range ends before this range too, nothing to do.
         return;
       }
 
       if (to < get_to(bound)) {
-        // range ends in the middle of current range
+        // Range ends in the middle of current range, reduce current.
         reduce_from(bound, to);
         return;
       }
 
       if (to == get_to(bound)) {
-        // range ends exactly with current range
+        // Range ends exactly with current range, erase current.
         erase_range(bound);
         return;
       }
 
-      // range ends later than current range, need to check the range(s) after this one too
+      // Range ends later than current range.
+      // First erase current, then loop to check the range(s) after this one too.
       bound = erase_range(bound);
       if (bound == Map.end()) {
+        // Unless that was the last range, in which case there's nothing else to do.
         return;
       }
     }
