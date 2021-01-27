@@ -4,9 +4,9 @@
 
 #include "rangeset.h"
 
-static HyoutaUtilities::RangeSet<size_t> r(std::vector<size_t> v) {
-  HyoutaUtilities::RangeSet<size_t> rs;
-  for (size_t i = 1; i < v.size(); i += 2) {
+static HyoutaUtilities::RangeSet<std::size_t> r(std::vector<std::size_t> v) {
+  HyoutaUtilities::RangeSet<std::size_t> rs;
+  for (std::size_t i = 1; i < v.size(); i += 2) {
     rs.insert(v[i - 1], v[i]);
   }
   return rs;
@@ -14,7 +14,7 @@ static HyoutaUtilities::RangeSet<size_t> r(std::vector<size_t> v) {
 
 class InsertTest : public ::testing::Test {
 public:
-  HyoutaUtilities::RangeSet<size_t> rs;
+  HyoutaUtilities::RangeSet<std::size_t> rs;
 
   void SetUp() override {
     rs.insert(10, 20);
@@ -25,15 +25,15 @@ public:
     ASSERT_TRUE(rs.size() == 5);
   }
 
-  HyoutaUtilities::RangeSet<size_t> with(size_t from, size_t to) {
-    HyoutaUtilities::RangeSet<size_t> tmp = rs;
+  HyoutaUtilities::RangeSet<std::size_t> with(std::size_t from, std::size_t to) {
+    HyoutaUtilities::RangeSet<std::size_t> tmp = rs;
     tmp.insert(from, to);
     return tmp;
   }
 };
 
 TEST_F(InsertTest, Tests) {
-  // std::vector<size_t> a = {5,  8,  10, 14, 15, 20, 21, 25, 28, 30, 35, 40, 45, 50, 55,
+  // std::vector<std::size_t> a = {5,  8,  10, 14, 15, 20, 21, 25, 28, 30, 35, 40, 45, 50, 55,
   //                          60, 65, 67, 68, 70, 71, 72, 73, 75, 80, 85, 90, 95, 100};
   EXPECT_TRUE(with(5, 8) == r({5, 8, 10, 20, 21, 30, 50, 65, 70, 71, 75, 90}));
   EXPECT_TRUE(with(5, 10) == r({5, 20, 21, 30, 50, 65, 70, 71, 75, 90}));

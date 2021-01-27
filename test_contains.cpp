@@ -2,7 +2,7 @@
 
 #include "rangeset.h"
 
-static void setup(HyoutaUtilities::RangeSet<size_t>& rs) {
+static void setup(HyoutaUtilities::RangeSet<std::size_t>& rs) {
   rs.insert(10, 18);
   rs.insert(20, 29);
   rs.insert(30, 37);
@@ -12,7 +12,7 @@ static void setup(HyoutaUtilities::RangeSet<size_t>& rs) {
 }
 
 TEST(ContainsTest, Tests) {
-  HyoutaUtilities::RangeSet<size_t> rs;
+  HyoutaUtilities::RangeSet<std::size_t> rs;
   setup(rs);
   EXPECT_FALSE(rs.contains(0));
   EXPECT_FALSE(rs.contains(1));

@@ -2,7 +2,7 @@
 
 #include "rangesizeset.h"
 
-static void setup(HyoutaUtilities::RangeSizeSet<size_t>& rs) {
+static void setup(HyoutaUtilities::RangeSizeSet<std::size_t>& rs) {
   rs.insert(10, 18);
   rs.insert(20, 29);
   rs.insert(30, 36);
@@ -12,7 +12,7 @@ static void setup(HyoutaUtilities::RangeSizeSet<size_t>& rs) {
 }
 
 TEST(LookupSizeTest, BySizeCount) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
   setup(rs);
   EXPECT_TRUE(rs.by_size_count(0) == 0);
   EXPECT_TRUE(rs.by_size_count(1) == 1);
@@ -27,7 +27,7 @@ TEST(LookupSizeTest, BySizeCount) {
   EXPECT_TRUE(rs.by_size_count(10) == 0);
 }
 TEST(LookupSizeTest, BySizeFind) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
   setup(rs);
   auto it = rs.by_size_begin();
   ASSERT_TRUE(it != rs.by_size_end());
@@ -54,7 +54,7 @@ TEST(LookupSizeTest, BySizeFind) {
   EXPECT_TRUE(rs.by_size_find(10) == rs.by_size_end());
 }
 TEST(LookupSizeTest, BySizeEqualRange) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
   setup(rs);
   auto it = rs.by_size_begin();
   ASSERT_TRUE(it != rs.by_size_end());
@@ -81,7 +81,7 @@ TEST(LookupSizeTest, BySizeEqualRange) {
   EXPECT_TRUE(rs.by_size_equal_range(0) == std::make_pair(rs.by_size_end(), rs.by_size_end()));
 }
 TEST(LookupSizeTest, BySizeLowerBound) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
   setup(rs);
   auto it = rs.by_size_begin();
   ASSERT_TRUE(it != rs.by_size_end());
@@ -108,7 +108,7 @@ TEST(LookupSizeTest, BySizeLowerBound) {
   EXPECT_TRUE(rs.by_size_lower_bound(0) == rs.by_size_end());
 }
 TEST(LookupSizeTest, BySizeUpperBound) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
   setup(rs);
   auto it = rs.by_size_begin();
   ASSERT_TRUE(it != rs.by_size_end());

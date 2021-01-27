@@ -4,9 +4,9 @@
 
 #include "rangeset.h"
 
-static HyoutaUtilities::RangeSet<size_t> r(std::vector<size_t> v) {
-  HyoutaUtilities::RangeSet<size_t> rs;
-  for (size_t i = 1; i < v.size(); i += 2) {
+static HyoutaUtilities::RangeSet<std::size_t> r(std::vector<std::size_t> v) {
+  HyoutaUtilities::RangeSet<std::size_t> rs;
+  for (std::size_t i = 1; i < v.size(); i += 2) {
     rs.insert(v[i - 1], v[i]);
   }
   return rs;
@@ -14,7 +14,7 @@ static HyoutaUtilities::RangeSet<size_t> r(std::vector<size_t> v) {
 
 class EraseTest : public ::testing::Test {
 public:
-  HyoutaUtilities::RangeSet<size_t> rs;
+  HyoutaUtilities::RangeSet<std::size_t> rs;
 
   void SetUp() override {
     rs.insert(10, 20);
@@ -25,8 +25,8 @@ public:
     ASSERT_TRUE(rs.size() == 5);
   }
 
-  HyoutaUtilities::RangeSet<size_t> without(size_t from, size_t to) {
-    HyoutaUtilities::RangeSet<size_t> tmp = rs;
+  HyoutaUtilities::RangeSet<std::size_t> without(std::size_t from, std::size_t to) {
+    HyoutaUtilities::RangeSet<std::size_t> tmp = rs;
     tmp.erase(from, to);
     return tmp;
   }
@@ -442,7 +442,7 @@ TEST_F(EraseTest, Tests) {
 }
 
 TEST_F(EraseTest, ViaIterator) {
-  HyoutaUtilities::RangeSet<size_t> r;
+  HyoutaUtilities::RangeSet<std::size_t> r;
   r.insert(1, 5);
   r.insert(7, 20);
   r.insert(40, 44);

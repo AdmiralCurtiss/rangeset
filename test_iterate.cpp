@@ -4,7 +4,7 @@
 
 class IterateTest : public ::testing::Test {
 public:
-  HyoutaUtilities::RangeSet<size_t> rs;
+  HyoutaUtilities::RangeSet<std::size_t> rs;
 
   void SetUp() override {
     ASSERT_TRUE(rs.size() == 0);

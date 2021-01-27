@@ -2,7 +2,7 @@
 
 #include "rangesizeset.h"
 
-static void setup(HyoutaUtilities::RangeSizeSet<size_t>& rs) {
+static void setup(HyoutaUtilities::RangeSizeSet<std::size_t>& rs) {
   ASSERT_TRUE(rs.size() == 0);
   rs.insert(100, 180);
   ASSERT_TRUE(rs.size() == 1);
@@ -17,7 +17,7 @@ static void setup(HyoutaUtilities::RangeSizeSet<size_t>& rs) {
 }
 
 TEST(IterateSizeTest, ForwardIterationFromBegin) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
   setup(rs);
   auto it = rs.begin();
   ASSERT_TRUE(it.from() == 100);
@@ -39,7 +39,7 @@ TEST(IterateSizeTest, ForwardIterationFromBegin) {
 }
 
 TEST(IterateSizeTest, BackwardIterationFromEnd) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
   setup(rs);
   auto it = rs.end();
   --it;
@@ -61,7 +61,7 @@ TEST(IterateSizeTest, BackwardIterationFromEnd) {
 }
 
 TEST(IterateSizeTest, BySizeForwardIterationFromBegin) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
   setup(rs);
   auto it = rs.by_size_begin();
   ASSERT_TRUE(it.from() == 300);
@@ -83,7 +83,7 @@ TEST(IterateSizeTest, BySizeForwardIterationFromBegin) {
 }
 
 TEST(IterateSizeTest, BySizeBackwardIterationFromEnd) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
   setup(rs);
   auto it = rs.by_size_end();
   --it;
@@ -105,7 +105,7 @@ TEST(IterateSizeTest, BySizeBackwardIterationFromEnd) {
 }
 
 TEST(IterateSizeTest, IteratorConversion) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
   setup(rs);
   auto itR = rs.begin();
   auto itR100 = itR++;
