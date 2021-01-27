@@ -5,7 +5,7 @@
 
 #include "rangesizeset.h"
 
-static void setup(HyoutaUtilities::RangeSizeSet<size_t>& rs) {
+static void setup(HyoutaUtilities::RangeSizeSet<std::size_t>& rs) {
   rs.insert(10, 20);
   rs.insert(21, 30);
   rs.insert(50, 65);
@@ -14,36 +14,36 @@ static void setup(HyoutaUtilities::RangeSizeSet<size_t>& rs) {
   ASSERT_TRUE(rs.size() == 5);
 }
 
-static HyoutaUtilities::RangeSizeSet<size_t> r(std::vector<size_t> v) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
-  for (size_t i = 1; i < v.size(); i += 2) {
+static HyoutaUtilities::RangeSizeSet<std::size_t> r(std::vector<std::size_t> v) {
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
+  for (std::size_t i = 1; i < v.size(); i += 2) {
     rs.insert(v[i - 1], v[i]);
   }
   return rs;
 }
 
-static HyoutaUtilities::RangeSizeSet<size_t> without(size_t from, size_t to) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs;
+static HyoutaUtilities::RangeSizeSet<std::size_t> without(std::size_t from, std::size_t to) {
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs;
   setup(rs);
   rs.erase(from, to);
   return rs;
 }
 
-static void check(const HyoutaUtilities::RangeSizeSet<size_t>& actual, const std::vector<size_t>& expected_vec) {
-  HyoutaUtilities::RangeSizeSet<size_t> expected = r(expected_vec);
+static void check(const HyoutaUtilities::RangeSizeSet<std::size_t>& actual, const std::vector<std::size_t>& expected_vec) {
+  HyoutaUtilities::RangeSizeSet<std::size_t> expected = r(expected_vec);
   EXPECT_TRUE(actual == expected);
   ASSERT_TRUE(expected_vec.size() % 2 == 0);
 
-  std::vector<size_t> sizes;
-  for (size_t i = 0; i < expected_vec.size(); i += 2) {
+  std::vector<std::size_t> sizes;
+  for (std::size_t i = 0; i < expected_vec.size(); i += 2) {
     sizes.push_back(expected_vec[i + 1] - expected_vec[i]);
   }
   std::sort(sizes.begin(), sizes.end());
   std::reverse(sizes.begin(), sizes.end());
 
-  size_t idx = 0;
+  std::size_t idx = 0;
   for (auto it = actual.by_size_begin(); it != actual.by_size_end(); ++it) {
-    size_t actual_size = it.to() - it.from();
+    std::size_t actual_size = it.to() - it.from();
     EXPECT_TRUE(actual_size == sizes[idx]);
     ++idx;
   }
@@ -459,7 +459,7 @@ TEST(EraseSizeTest, Tests) {
 }
 
 TEST(EraseSizeTest, ViaIterator) {
-  HyoutaUtilities::RangeSizeSet<size_t> r;
+  HyoutaUtilities::RangeSizeSet<std::size_t> r;
   r.insert(1, 5);
   r.insert(7, 20);
   r.insert(40, 44);
@@ -490,7 +490,7 @@ TEST(EraseSizeTest, ViaIterator) {
 }
 
 TEST(EraseSizeTest, ViaSizeIterator) {
-  HyoutaUtilities::RangeSizeSet<size_t> r;
+  HyoutaUtilities::RangeSizeSet<std::size_t> r;
   r.insert(1, 5);
   r.insert(7, 20);
   r.insert(40, 45);

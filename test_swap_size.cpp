@@ -3,18 +3,18 @@
 #include "rangesizeset.h"
 
 TEST(SwapSizeTest, Tests) {
-  HyoutaUtilities::RangeSizeSet<size_t> rs1;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs1;
   rs1.insert(10, 20);
   rs1.insert(30, 32);
   rs1.insert(45, 99);
-  HyoutaUtilities::RangeSizeSet<size_t> rs2;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs2;
   rs2.insert(20, 24);
   rs2.insert(70, 71);
-  HyoutaUtilities::RangeSizeSet<size_t> rs3;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs3;
   rs3.insert(10, 20);
   rs3.insert(30, 32);
   rs3.insert(45, 99);
-  HyoutaUtilities::RangeSizeSet<size_t> rs4;
+  HyoutaUtilities::RangeSizeSet<std::size_t> rs4;
   rs4.insert(20, 24);
   rs4.insert(70, 71);
 
