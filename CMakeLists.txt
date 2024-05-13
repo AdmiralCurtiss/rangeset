@@ -7,6 +7,7 @@ find_package(GTest REQUIRED)
 
 add_executable(test_rangeset
  "rangeset.h"
+ "rangesizeset.h"
  "test_insert.cpp"
  "test_iterate.cpp"
  "test_erase.cpp"
@@ -19,6 +20,7 @@ add_executable(test_rangeset
  "test_lookup_size.cpp"
  "test_swap.cpp"
  "test_swap_size.cpp"
+ "test_get_stats.cpp"
 )
 
 target_link_libraries(
